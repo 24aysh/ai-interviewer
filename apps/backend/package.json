@@ -10,8 +10,12 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@deepgram/sdk": "^5.4.0",
     "@types/express": "^5.0.6",
+    "@types/ws": "^8.18.1",
     "express": "^5.2.1",
+    "websocket": "^1.0.35",
+    "ws": "^8.21.0",
     "zod": "^4.4.3"
   }
 }
