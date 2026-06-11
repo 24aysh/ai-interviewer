@@ -1,159 +1,225 @@
-# Turborepo starter
+# InterVue.AI
 
-This Turborepo starter is maintained by the Turborepo core team.
+An AI-powered technical interviewer that conducts voice interviews based on a candidate's GitHub profile. The interviewer asks computer science questions tailored to the candidate's projects and evaluates the conversation at the end to produce a score and written feedback.
 
-## Using this example
+## How It Works
 
-Run the following command:
+1. Enter your GitHub profile URL.
+2. The backend fetches your public repositories and creates an interview session.
+3. A real-time voice call is established using WebRTC and the OpenAI Realtime API.
+4. The AI asks technical questions based on your GitHub projects. You respond by speaking.
+5. When you end the interview, the full transcript is evaluated by Gemini and a score with feedback is returned.
 
-```sh
-npx create-turbo@latest
+## Architecture
+
+### System Overview
+
+```mermaid
+graph TD
+    User["Browser (React)"]
+    Backend["Express Backend (port 3001)"]
+    DB["PostgreSQL (via Prisma)"]
+    GitHub["GitHub REST API"]
+    OpenAI["OpenAI Realtime API"]
+    Deepgram["Deepgram Transcription API"]
+    Gemini["Google Gemini API"]
+
+    User -->|"POST /api/v1/pre-interview\n(GitHub URL)"| Backend
+    Backend -->|"Fetch public repos"| GitHub
+    Backend -->|"Store interview session"| DB
+
+    User -->|"POST /api/v1/session/:id\n(SDP offer)"| Backend
+    Backend -->|"WebRTC signalling\n(SDP answer)"| OpenAI
+    Backend -->|"Sideband WebSocket\n(session.update with GitHub context)"| OpenAI
+    OpenAI -->|"Audio stream"| User
+
+    User -->|"Microphone audio"| Deepgram
+    Deepgram -->|"Transcript"| User
+    User -->|"POST /api/v1/session/user/:id\n(transcript chunk)"| Backend
+    Backend -->|"Store user messages"| DB
+
+    User -->|"GET /api/v1/results/:id"| Backend
+    Backend -->|"Full transcript"| Gemini
+    Gemini -->|"Score + feedback"| Backend
+    Backend -->|"Return results"| User
 ```
 
-## What's inside?
+### Data Model
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```mermaid
+erDiagram
+    Interview {
+        String id PK
+        Json githubMetaData
+        InterviewStatus status
+        Int score
+        String feedback
+    }
+    Message {
+        String id PK
+        String message
+        MessageType type
+        String interviewId FK
+        DateTime createdAt
+    }
+    Interview ||--o{ Message : "conversations"
 ```
 
-Without global `turbo`, use your package manager:
+### Interview Lifecycle
 
-```sh
-cd my-turborepo
-npx turbo build
-bun dlx turbo build
-bun exec turbo build
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant Backend
+    participant OpenAI
+    participant Deepgram
+    participant Gemini
+
+    Browser->>Backend: POST /pre-interview (GitHub URL)
+    Backend->>GitHub API: GET /users/:username/repos
+    Backend->>DB: Create Interview record (status: Pre)
+    Backend-->>Browser: { id: interviewId }
+
+    Browser->>Backend: POST /session/:interviewId (SDP offer)
+    Backend->>OpenAI: POST /v1/realtime/calls (SDP + config)
+    OpenAI-->>Backend: SDP answer + callId
+    Backend-->>Browser: SDP answer
+    Backend->>OpenAI: WebSocket session.update (inject GitHub context)
+
+    Note over Browser,OpenAI: WebRTC audio channel active
+
+    loop During interview
+        Browser->>Deepgram: Stream microphone audio (WebSocket)
+        Deepgram-->>Browser: Transcript chunk
+        Browser->>Backend: POST /session/user/:id (transcript)
+        Backend->>DB: Store user message
+        OpenAI->>Backend: response.done event (via sideband WebSocket)
+        Backend->>DB: Store assistant message
+    end
+
+    Browser->>Backend: GET /results/:interviewId
+    Backend->>Gemini: Full conversation transcript
+    Gemini-->>Backend: Score (0-10) + feedback text
+    Backend->>DB: Update interview (status: Done, score, feedback)
+    Backend-->>Browser: Transcript + score + feedback
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## Repository Structure
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
+```
+mercor-ai-interviewer/
+├── apps/
+│   ├── backend/            # Express server
+│   │   ├── index.ts        # API routes
+│   │   ├── sideband.ts     # OpenAI sideband WebSocket (injects interview context)
+│   │   ├── result.ts       # Gemini evaluation logic
+│   │   ├── db.ts           # Prisma client instance
+│   │   ├── types.ts        # Zod request validation schemas
+│   │   └── prisma/
+│   │       └── schema.prisma
+│   └── frontend/           # React + Bun frontend
+│       └── src/
+│           ├── App.tsx
+│           └── components/
+│               ├── Forms.tsx       # GitHub URL entry
+│               ├── Interview.tsx   # WebRTC + Deepgram session
+│               └── Results.tsx     # Score and feedback display
+├── packages/
+│   ├── ui/                 # Shared component library
+│   ├── eslint-config/
+│   └── typescript-config/
+└── turbo.json
 ```
 
-Without global `turbo`:
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, Bun, Tailwind CSS, shadcn/ui |
+| Backend | Express 5, Bun runtime |
+| Database | PostgreSQL, Prisma ORM |
+| Voice AI | OpenAI Realtime API (WebRTC) |
+| Transcription | Deepgram |
+| Evaluation | Google Gemini |
+| Monorepo | Turborepo |
+
+## Local Setup
+
+### Prerequisites
+
+- [Bun](https://bun.sh) >= 1.3
+- Node.js >= 18
+- PostgreSQL running locally (or a remote connection string)
+- API keys for OpenAI, Deepgram, and Google Gemini
+
+### 1. Clone and install
 
 ```sh
-npx turbo build --filter=docs
-bun exec turbo build --filter=docs
-bun exec turbo build --filter=docs
+git clone https://github.com/your-username/mercor-ai-interviewer.git
+cd mercor-ai-interviewer
+bun install
 ```
 
-### Develop
+### 2. Configure environment variables
 
-To develop all apps and packages, run the following command:
+Create `apps/backend/.env`:
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/mercor"
+OPENAI_API_KEY="sk-..."
+GEMINI_API_KEY="AIza..."
+```
+
+Create `apps/frontend/src/.env`:
+
+```env
+VITE_BACKEND_URL="http://localhost:3001"
+```
+
+### 3. Set up the database
 
 ```sh
-cd my-turborepo
-turbo dev
+cd apps/backend
+bunx prisma migrate dev
 ```
 
-Without global `turbo`, use your package manager:
+### 4. Run the development servers
+
+From the repository root:
 
 ```sh
-cd my-turborepo
-npx turbo dev
-bun exec turbo dev
-bun exec turbo dev
+bun run dev
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+This starts both the backend (port 3001) and frontend (port 3000) via Turborepo.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+To run each individually:
 
 ```sh
-turbo dev --filter=web
+# Backend only
+cd apps/backend
+bun --hot index.ts
+
+# Frontend only
+cd apps/frontend
+bun --hot src/index.ts
 ```
 
-Without global `turbo`:
+### 5. Open the app
 
-```sh
-npx turbo dev --filter=web
-bun exec turbo dev --filter=web
-bun exec turbo dev --filter=web
-```
+Visit `http://localhost:3000` in your browser.
 
-### Remote Caching
+## API Reference
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/v1/pre-interview` | Accepts `{ github: string }`, fetches repos, creates an interview session. Returns `{ id }`. |
+| `POST` | `/api/v1/session/:interviewId` | Accepts a WebRTC SDP offer, forwards to OpenAI Realtime, returns the SDP answer. |
+| `POST` | `/api/v1/session/user/:interviewId` | Stores a user transcript chunk `{ message: string }`. |
+| `GET` | `/api/v1/results/:interviewId` | Returns the full transcript, score, and feedback. Triggers evaluation if not already done. |
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+## Notes
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-bun exec turbo login
-bun exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-bun exec turbo link
-bun exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+- The Deepgram API key is currently hard-coded in `Interview.tsx`. Move it to an environment variable before deploying.
+- The sideband WebSocket in `sideband.ts` connects to OpenAI's Realtime API server-side to inject the system prompt (GitHub context) after the WebRTC call is established. This runs in parallel with the WebRTC audio channel.
+- Evaluation is triggered lazily on the first `GET /results` call after the interview ends.
