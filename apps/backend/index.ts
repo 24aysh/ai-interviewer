@@ -98,6 +98,52 @@ app.post("/api/v1/session/:interviewId", async (req, res) => {
   }
 });
 
+app.post("/api/v1/session/user/:interviewId", async (req,res) => {
+  const {message} = req.body;
+  await prisma.message.create({
+    data :{
+      interviewId: req.params.interviewId,
+      type: "User",
+      message:message
+    }
+  })
+  res.json({
+    "Message" : "Message Saved to DB"
+  });
+})
+
+app.get("/api/v1/result/:interviewId", async (req,res) => {
+  const interview = await prisma.interview.findFirst(
+    {
+      where : {
+        id : req.params.interviewId
+      },
+      include :{
+        conversations : true
+      }
+    }
+  )
+  if (!interview){
+    res.status(411).json({
+      Error : "Interview not found"
+    })
+    return;
+  }
+  if(interview.status === "InProgess"){
+    
+  }
+  res.json({
+    transcript: interview?.conversations.map( c=> ({
+      type : c.type,
+      content : c.message,
+      createdAt : c.createdAt
+    })),
+    score : interview?.score,
+    feedback: interview?.feedback
+    
+  })
+
+})
 
 app.listen(3001, () => {
   console.log('Server is running on port 3001');
