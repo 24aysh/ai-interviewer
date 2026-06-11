@@ -28,7 +28,7 @@ export async function calculateResult(messages: {type: "Assistant" | "User", mes
         model: "gemini-3.5-flash",
         contents: RESULT_PROMPT.replace(`{{USER_TRANSCRIPT}}`, JSON.stringify(messages)),
         config: {
-            responseJsonSchema: { text: { mimeType: "application/json", schema: zodToJsonSchema(outputSchema) } },
+            responseJsonSchema: { text: { mimeType: "application/json", schema: zodToJsonSchema(outputSchema as any) } },
         },
     });
     console.log(response.text!);

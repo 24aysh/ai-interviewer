@@ -32,6 +32,6 @@ enum MessageType {
 
 enum InterviewStatus {
   Pre
-  InProgess 
+  InProgress 
   Done
 }

@@ -11,14 +11,18 @@ app.use(express.json());
 app.use(express.text({ type: ["application/sdp", "text/plain"] }));
 
 function getGithubUsername(github: string) {
-  const normalized = github.trim().replace(/\/$/, "");
+  let normalized = github.trim().replace(/\/$/, "");
 
   if (!normalized) {
     return null;
   }
 
   if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) {
-    return normalized.includes("/") ? null : normalized;
+    if (normalized.includes("github.com/")) {
+      normalized = "https://" + normalized;
+    } else {
+      return normalized.includes("/") ? null : normalized;
+    }
   }
 
   try {
@@ -112,7 +116,7 @@ app.post("/api/v1/session/user/:interviewId", async (req,res) => {
   });
 })
 
-app.get("/api/v1/result/:interviewId", async (req,res) => {
+app.get("/api/v1/results/:interviewId", async (req,res) => {
   const interview = await prisma.interview.findFirst(
     {
       where : {
@@ -129,9 +133,27 @@ app.get("/api/v1/result/:interviewId", async (req,res) => {
     })
     return;
   }
-  if(interview.status === "InProgess"){
-    
+  
+  if(interview.status !== "Done"){
+    try {
+      const { calculateResult } = await import("./result");
+      const evalResult = await calculateResult(interview.conversations);
+      await prisma.interview.update({
+        where: { id: interview.id },
+        data: {
+          status: "Done",
+          score: evalResult.score,
+          feedback: evalResult.feedback
+        }
+      });
+      interview.score = evalResult.score;
+      interview.feedback = evalResult.feedback;
+      interview.status = "Done";
+    } catch (e) {
+      console.error(e);
+    }
   }
+
   res.json({
     transcript: interview?.conversations.map( c=> ({
       type : c.type,
@@ -139,8 +161,8 @@ app.get("/api/v1/result/:interviewId", async (req,res) => {
       createdAt : c.createdAt
     })),
     score : interview?.score,
-    feedback: interview?.feedback
-    
+    feedback: interview?.feedback,
+    status: interview?.status
   })
 
 })
