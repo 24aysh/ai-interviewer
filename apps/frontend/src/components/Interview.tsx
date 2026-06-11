@@ -38,28 +38,30 @@ export function Interview(){
                 const received = JSON.parse(message.data);
                 const transcript = received.channel.alternatives[0].transcript;
                 if(transcript){
-                    console.log(transcript);
+                    axios.post(`${BACKEND_URL}/api/v1/session/user/${interviewId}`,{
+                        message : transcript
+                    })
                 }
             }
-            pc.addTrack(ms.getTracks()[0]!);
+            // pc.addTrack(ms.getTracks()[0]!);
 
-            // Start the session using the Session Description Protocol (SDP)
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
+            // // Start the session using the Session Description Protocol (SDP)
+            // const offer = await pc.createOffer();
+            // await pc.setLocalDescription(offer);
 
-            const sdpResponse = await fetch(`${BACKEND_URL}/api/v1/session/${interviewId}`, {
-            method: "POST",
-            body: offer.sdp,
-            headers: {
-                "Content-Type": "application/sdp",
-            },
-            });
+            // const sdpResponse = await fetch(`${BACKEND_URL}/api/v1/session/${interviewId}`, {
+            // method: "POST",
+            // body: offer.sdp,
+            // headers: {
+            //     "Content-Type": "application/sdp",
+            // },
+            // });
 
-            const answer = {
-                type: "answer",
-                sdp: await sdpResponse.text(),
-            } as const;
-            await pc.setRemoteDescription(answer);
+            // const answer = {
+            //     type: "answer",
+            //     sdp: await sdpResponse.text(),
+            // } as const;
+            // await pc.setRemoteDescription(answer);
         })();    
     }, [interviewId]);
     return (
