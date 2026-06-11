@@ -8,6 +8,9 @@ import { Progress } from "@/components/ui/progress";
 import { BACKEND_URL } from "../lib/config";
 import { useNavigate } from "react-router";
 
+/**
+ * Form component to accept the user's Github URL and initiate the interview process.
+ */
 export function Form() {
   const [github, setGithub] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,6 +18,7 @@ export function Form() {
 
   const navigate = useNavigate();
 
+  // Handle fake progress bar progression while loading
   useEffect(() => {
     if (!loading) {
       setProgress(0);
@@ -30,6 +34,7 @@ export function Form() {
     return () => clearTimeout(timer);
   }, [loading]);
 
+  // Submit the github URL to the backend to create an interview session
   async function handleSubmit() {
     if (!github) {
       toast.error("Invalid Input", {
@@ -41,13 +46,13 @@ export function Form() {
 
     try {
       setLoading(true);
-
       const resp = await axios.post(`${BACKEND_URL}/api/v1/pre-interview`, {
         github,
       });
 
       setProgress(100);
 
+      // Navigate to the interview interface with the created session ID
       navigate(`/interview/${resp.data.id}`);
     } catch (error) {
       toast.error("Error", {
@@ -71,12 +76,12 @@ export function Form() {
         )}
 
         <div className="flex justify-center">
-          <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+          <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0 mb-4">
             InterVue.AI
           </h2>
         </div>
 
-        <div className="p-1">
+        <div className="p-1 mb-2">
           <Input
             placeholder="Github URL"
             value={github}
