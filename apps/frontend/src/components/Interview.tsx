@@ -14,6 +14,7 @@ export function Interview(){
     const pcRef = useRef<RTCPeerConnection | null>(null);
     const mediaStreamRef = useRef<MediaStream | null>(null);
     const socketRef = useRef<WebSocket | null>(null);
+    const [micDenied, setMicDenied] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -26,10 +27,22 @@ export function Interview(){
             audioRef.current.autoplay = true;
             pc.ontrack = (e) => (audioRef.current!.srcObject = e.streams[0]!);
 
-            // Add local audio track for microphone input in the browser
-            const ms = await navigator.mediaDevices.getUserMedia({
-                audio: true,
-            });
+            let ms: MediaStream;
+            try {
+                // Add local audio track for microphone input in the browser
+                ms = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (err) {
+                // NotAllowedError  — user denied the permission prompt
+                // NotFoundError    — no microphone device found
+                if (
+                    err instanceof DOMException &&
+                    (err.name === "NotAllowedError" || err.name === "NotFoundError")
+                ) {
+                    if (isMounted) setMicDenied(true);
+                }
+                pc.close();
+                return;
+            }
             mediaStreamRef.current = ms;
 
             // Deepgram transcription websocket
@@ -96,6 +109,51 @@ export function Interview(){
     const handleEndInterview = () => {
         navigate(`/results/${interviewId}`);
     };
+
+    if (micDenied) {
+        return (
+            <div className="h-screen w-screen flex flex-col justify-center items-center gap-6 text-center px-4">
+                <div className="flex flex-col items-center gap-3 max-w-sm">
+                    {/* Microphone blocked icon */}
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-16 h-16 text-destructive opacity-80"
+                        aria-hidden="true"
+                    >
+                        <line x1="2" y1="2" x2="22" y2="22" />
+                        <path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2" />
+                        <path d="M5 10v2a7 7 0 0 0 12 5" />
+                        <path d="M15 9.34V5a3 3 0 0 0-5.68-1.33" />
+                        <path d="M9 9v3a3 3 0 0 0 5.12 2.12" />
+                        <line x1="12" y1="19" x2="12" y2="22" />
+                        <line x1="8" y1="22" x2="16" y2="22" />
+                    </svg>
+                    <h2 className="text-2xl font-semibold">Microphone access denied</h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        This interview requires microphone access to capture your responses.
+                        Allow microphone access in your browser settings and then reload the page to try again.
+                    </p>
+                    <div className="bg-muted rounded-md px-4 py-3 text-xs text-left w-full">
+                        <p className="font-medium mb-1">How to enable microphone access:</p>
+                        <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                            <li>Click the lock icon in your browser's address bar.</li>
+                            <li>Set <span className="font-medium text-foreground">Microphone</span> to <span className="font-medium text-foreground">Allow</span>.</li>
+                            <li>Reload the page.</li>
+                        </ol>
+                    </div>
+                </div>
+                <Button onClick={() => window.location.reload()}>
+                    Reload and try again
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <div className="h-screen w-screen flex flex-col justify-center items-center gap-4">
