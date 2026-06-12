@@ -36,6 +36,7 @@ export type InterviewSumAggregateOutputType = {
 
 export type InterviewMinAggregateOutputType = {
   id: string | null
+  resume: string | null
   status: $Enums.InterviewStatus | null
   score: number | null
   feedback: string | null
@@ -43,6 +44,7 @@ export type InterviewMinAggregateOutputType = {
 
 export type InterviewMaxAggregateOutputType = {
   id: string | null
+  resume: string | null
   status: $Enums.InterviewStatus | null
   score: number | null
   feedback: string | null
@@ -51,6 +53,7 @@ export type InterviewMaxAggregateOutputType = {
 export type InterviewCountAggregateOutputType = {
   id: number
   githubMetaData: number
+  resume: number
   status: number
   score: number
   feedback: number
@@ -68,6 +71,7 @@ export type InterviewSumAggregateInputType = {
 
 export type InterviewMinAggregateInputType = {
   id?: true
+  resume?: true
   status?: true
   score?: true
   feedback?: true
@@ -75,6 +79,7 @@ export type InterviewMinAggregateInputType = {
 
 export type InterviewMaxAggregateInputType = {
   id?: true
+  resume?: true
   status?: true
   score?: true
   feedback?: true
@@ -83,6 +88,7 @@ export type InterviewMaxAggregateInputType = {
 export type InterviewCountAggregateInputType = {
   id?: true
   githubMetaData?: true
+  resume?: true
   status?: true
   score?: true
   feedback?: true
@@ -178,6 +184,7 @@ export type InterviewGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 export type InterviewGroupByOutputType = {
   id: string
   githubMetaData: runtime.JsonValue
+  resume: string
   status: $Enums.InterviewStatus
   score: number
   feedback: string | null
@@ -209,6 +216,7 @@ export type InterviewWhereInput = {
   NOT?: Prisma.InterviewWhereInput | Prisma.InterviewWhereInput[]
   id?: Prisma.StringFilter<"Interview"> | string
   githubMetaData?: Prisma.JsonFilter<"Interview">
+  resume?: Prisma.StringFilter<"Interview"> | string
   status?: Prisma.EnumInterviewStatusFilter<"Interview"> | $Enums.InterviewStatus
   score?: Prisma.IntFilter<"Interview"> | number
   feedback?: Prisma.StringNullableFilter<"Interview"> | string | null
@@ -218,6 +226,7 @@ export type InterviewWhereInput = {
 export type InterviewOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   githubMetaData?: Prisma.SortOrder
+  resume?: Prisma.SortOrder
   status?: Prisma.SortOrder
   score?: Prisma.SortOrder
   feedback?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -230,6 +239,7 @@ export type InterviewWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.InterviewWhereInput[]
   NOT?: Prisma.InterviewWhereInput | Prisma.InterviewWhereInput[]
   githubMetaData?: Prisma.JsonFilter<"Interview">
+  resume?: Prisma.StringFilter<"Interview"> | string
   status?: Prisma.EnumInterviewStatusFilter<"Interview"> | $Enums.InterviewStatus
   score?: Prisma.IntFilter<"Interview"> | number
   feedback?: Prisma.StringNullableFilter<"Interview"> | string | null
@@ -239,6 +249,7 @@ export type InterviewWhereUniqueInput = Prisma.AtLeast<{
 export type InterviewOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   githubMetaData?: Prisma.SortOrder
+  resume?: Prisma.SortOrder
   status?: Prisma.SortOrder
   score?: Prisma.SortOrder
   feedback?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -255,6 +266,7 @@ export type InterviewScalarWhereWithAggregatesInput = {
   NOT?: Prisma.InterviewScalarWhereWithAggregatesInput | Prisma.InterviewScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Interview"> | string
   githubMetaData?: Prisma.JsonWithAggregatesFilter<"Interview">
+  resume?: Prisma.StringWithAggregatesFilter<"Interview"> | string
   status?: Prisma.EnumInterviewStatusWithAggregatesFilter<"Interview"> | $Enums.InterviewStatus
   score?: Prisma.IntWithAggregatesFilter<"Interview"> | number
   feedback?: Prisma.StringNullableWithAggregatesFilter<"Interview"> | string | null
@@ -263,6 +275,7 @@ export type InterviewScalarWhereWithAggregatesInput = {
 export type InterviewCreateInput = {
   id?: string
   githubMetaData: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  resume: string
   status: $Enums.InterviewStatus
   score?: number
   feedback?: string | null
@@ -272,6 +285,7 @@ export type InterviewCreateInput = {
 export type InterviewUncheckedCreateInput = {
   id?: string
   githubMetaData: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  resume: string
   status: $Enums.InterviewStatus
   score?: number
   feedback?: string | null
@@ -281,6 +295,7 @@ export type InterviewUncheckedCreateInput = {
 export type InterviewUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   githubMetaData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  resume?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   score?: Prisma.IntFieldUpdateOperationsInput | number
   feedback?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -290,6 +305,7 @@ export type InterviewUpdateInput = {
 export type InterviewUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   githubMetaData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  resume?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   score?: Prisma.IntFieldUpdateOperationsInput | number
   feedback?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -299,6 +315,7 @@ export type InterviewUncheckedUpdateInput = {
 export type InterviewCreateManyInput = {
   id?: string
   githubMetaData: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  resume: string
   status: $Enums.InterviewStatus
   score?: number
   feedback?: string | null
@@ -307,6 +324,7 @@ export type InterviewCreateManyInput = {
 export type InterviewUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   githubMetaData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  resume?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   score?: Prisma.IntFieldUpdateOperationsInput | number
   feedback?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -315,6 +333,7 @@ export type InterviewUpdateManyMutationInput = {
 export type InterviewUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   githubMetaData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  resume?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   score?: Prisma.IntFieldUpdateOperationsInput | number
   feedback?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -323,6 +342,7 @@ export type InterviewUncheckedUpdateManyInput = {
 export type InterviewCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   githubMetaData?: Prisma.SortOrder
+  resume?: Prisma.SortOrder
   status?: Prisma.SortOrder
   score?: Prisma.SortOrder
   feedback?: Prisma.SortOrder
@@ -334,6 +354,7 @@ export type InterviewAvgOrderByAggregateInput = {
 
 export type InterviewMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  resume?: Prisma.SortOrder
   status?: Prisma.SortOrder
   score?: Prisma.SortOrder
   feedback?: Prisma.SortOrder
@@ -341,6 +362,7 @@ export type InterviewMaxOrderByAggregateInput = {
 
 export type InterviewMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  resume?: Prisma.SortOrder
   status?: Prisma.SortOrder
   score?: Prisma.SortOrder
   feedback?: Prisma.SortOrder
@@ -392,6 +414,7 @@ export type InterviewUpdateOneRequiredWithoutConversationsNestedInput = {
 export type InterviewCreateWithoutConversationsInput = {
   id?: string
   githubMetaData: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  resume: string
   status: $Enums.InterviewStatus
   score?: number
   feedback?: string | null
@@ -400,6 +423,7 @@ export type InterviewCreateWithoutConversationsInput = {
 export type InterviewUncheckedCreateWithoutConversationsInput = {
   id?: string
   githubMetaData: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  resume: string
   status: $Enums.InterviewStatus
   score?: number
   feedback?: string | null
@@ -424,6 +448,7 @@ export type InterviewUpdateToOneWithWhereWithoutConversationsInput = {
 export type InterviewUpdateWithoutConversationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   githubMetaData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  resume?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   score?: Prisma.IntFieldUpdateOperationsInput | number
   feedback?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -432,6 +457,7 @@ export type InterviewUpdateWithoutConversationsInput = {
 export type InterviewUncheckedUpdateWithoutConversationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   githubMetaData?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  resume?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInterviewStatusFieldUpdateOperationsInput | $Enums.InterviewStatus
   score?: Prisma.IntFieldUpdateOperationsInput | number
   feedback?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -471,6 +497,7 @@ export type InterviewCountOutputTypeCountConversationsArgs<ExtArgs extends runti
 export type InterviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   githubMetaData?: boolean
+  resume?: boolean
   status?: boolean
   score?: boolean
   feedback?: boolean
@@ -481,6 +508,7 @@ export type InterviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type InterviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   githubMetaData?: boolean
+  resume?: boolean
   status?: boolean
   score?: boolean
   feedback?: boolean
@@ -489,6 +517,7 @@ export type InterviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
 export type InterviewSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   githubMetaData?: boolean
+  resume?: boolean
   status?: boolean
   score?: boolean
   feedback?: boolean
@@ -497,12 +526,13 @@ export type InterviewSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
 export type InterviewSelectScalar = {
   id?: boolean
   githubMetaData?: boolean
+  resume?: boolean
   status?: boolean
   score?: boolean
   feedback?: boolean
 }
 
-export type InterviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "githubMetaData" | "status" | "score" | "feedback", ExtArgs["result"]["interview"]>
+export type InterviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "githubMetaData" | "resume" | "status" | "score" | "feedback", ExtArgs["result"]["interview"]>
 export type InterviewInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   conversations?: boolean | Prisma.Interview$conversationsArgs<ExtArgs>
   _count?: boolean | Prisma.InterviewCountOutputTypeDefaultArgs<ExtArgs>
@@ -518,6 +548,7 @@ export type $InterviewPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     githubMetaData: runtime.JsonValue
+    resume: string
     status: $Enums.InterviewStatus
     score: number
     feedback: string | null
@@ -947,6 +978,7 @@ export interface Prisma__InterviewClient<T, Null = never, ExtArgs extends runtim
 export interface InterviewFieldRefs {
   readonly id: Prisma.FieldRef<"Interview", 'String'>
   readonly githubMetaData: Prisma.FieldRef<"Interview", 'Json'>
+  readonly resume: Prisma.FieldRef<"Interview", 'String'>
   readonly status: Prisma.FieldRef<"Interview", 'InterviewStatus'>
   readonly score: Prisma.FieldRef<"Interview", 'Int'>
   readonly feedback: Prisma.FieldRef<"Interview", 'String'>

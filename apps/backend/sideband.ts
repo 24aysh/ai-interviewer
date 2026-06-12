@@ -24,6 +24,9 @@ export async function initSideBand(callId: string,interviewId: string){
                 instructions: `You are supposed to interview this guy's computer science knowledge based on their github. Ask around 2-3 questions based on each topic. Only use English while interviewing. Here is everything about the users github, it will give you rough idea about the projects
                 ## Github data
                 ${interview?.githubMetaData}
+
+                ## Resume
+                ${interview?.resume}
                 `,
             },
             })

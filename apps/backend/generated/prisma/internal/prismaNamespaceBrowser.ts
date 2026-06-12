@@ -74,6 +74,7 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const InterviewScalarFieldEnum = {
   id: 'id',
   githubMetaData: 'githubMetaData',
+  resume: 'resume',
   status: 'status',
   score: 'score',
   feedback: 'feedback'

@@ -4,11 +4,21 @@ import cors from 'cors';
 import { PreInterviewBody } from './types';
 import { prisma } from "./db"
 import { initSideBand } from './sideband';
+import multer from "multer";
+import pdfParse from "pdf-parse"
+
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.text({ type: ["application/sdp", "text/plain"] }));
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+  },
+});
 
 function getGithubUsername(github: string) {
   let normalized = github.trim().replace(/\/$/, "");
@@ -43,6 +53,7 @@ app.post('/api/v1/pre-interview',async (req, res) => {
     return res.status(400).json({error: "Invalid data"});
   }
   const githubUserName = getGithubUsername(data.github);
+  const resume = data.resume;
 
   if (!githubUserName) {
     return res.status(400).json({ error: "Invalid GitHub profile URL" });
@@ -60,13 +71,13 @@ app.post('/api/v1/pre-interview',async (req, res) => {
     const interviewId = await prisma.interview.create({
       data:{
         githubMetaData : JSON.stringify(scrap),
-        status: "Pre"
+        status: "Pre",
+        resume
       }
     })
-    
+
     res.status(200).json({ id: interviewId.id });
   } catch (error) {
-    console.error("Failed to create pre-interview:", error);
     res.status(502).json({ error: "Failed to fetch GitHub repositories" });
   }
 });
@@ -165,6 +176,24 @@ app.get("/api/v1/results/:interviewId", async (req,res) => {
     status: interview?.status
   })
 
+})
+
+app.post('/upload/resume', upload.single("resume"),async (req,res) => {
+  if (!req.file) {
+    return res.status(400).json({
+      error: "Please upload a PDF file.",
+    });
+  }
+
+  const pdfData = await pdfParse(req.file.buffer);
+
+  console.log(pdfData.text);
+
+  res.json({
+    success: true,
+    text: pdfData.text,
+  });
+  
 })
 
 app.listen(3001, () => {
