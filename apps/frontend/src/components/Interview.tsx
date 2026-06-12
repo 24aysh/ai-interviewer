@@ -23,9 +23,12 @@ export function Interview(){
             const pc = new RTCPeerConnection();
             pcRef.current = pc;
 
-            audioRef.current = document.createElement("audio");
-            audioRef.current.autoplay = true;
-            pc.ontrack = (e) => (audioRef.current!.srcObject = e.streams[0]!);
+            // Wire the WebRTC remote track directly into the rendered <audio> element
+            pc.ontrack = (e) => {
+                if (audioRef.current) {
+                    audioRef.current.srcObject = e.streams[0]!;
+                }
+            };
 
             let ms: MediaStream;
             try {
@@ -159,7 +162,8 @@ export function Interview(){
         <div className="h-screen w-screen flex flex-col justify-center items-center gap-4">
             <h2 className="text-2xl font-semibold">Interview in Progress</h2>
             <p className="text-muted-foreground">Speak into your microphone...</p>
-            <audio autoPlay ref={audioRef} className="hidden"></audio>
+            {/* This element receives the WebRTC audio stream from the AI interviewer */}
+            <audio autoPlay ref={audioRef} className="hidden" />
             <Button variant="destructive" onClick={handleEndInterview}>End Interview</Button>
         </div>
     )

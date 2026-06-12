@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Results } from "./components/Results";
 
 import "./index.css";
@@ -9,7 +8,6 @@ import { Toaster } from "sonner";
 import { BrowserRouter, Routes, Route } from "react-router";
 
 export function App() {
-  const [page, setPage] = useState<"form" | "interview" | "result">("form");
   return (
     <div>
       <ThemeToggle />

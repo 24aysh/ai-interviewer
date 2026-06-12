@@ -80,9 +80,16 @@ export function Form() {
       });
       return;
     }
-    if (!selectedFile){
+    if (!selectedFile) {
       toast.error("Invalid Input", {
-        description: "Please upload your resume",
+        description: "Please select your resume PDF",
+        position: "top-center",
+      });
+      return;
+    }
+    if (!resume) {
+      toast.error("Invalid Input", {
+        description: "Please click Upload to process your resume before starting",
         position: "top-center",
       });
       return;
