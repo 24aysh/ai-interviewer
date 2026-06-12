@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
@@ -13,10 +13,47 @@ import { useNavigate } from "react-router";
  */
 export function Form() {
   const [github, setGithub] = useState("");
+  const [resume,setResume] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const onFileChange = (event : React.ChangeEvent<HTMLInputElement> ) => {
+		if (event.target.files && event.target.files.length > 0) {
+      setSelectedFile(event.target.files[0]!);
+    }
+	};
 
   const navigate = useNavigate();
+
+  const onFileUpload = async () => {
+    if (!selectedFile) {
+      toast.error("Please select a resume");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+
+      // Must match upload.single("resume")
+      formData.append("resume", selectedFile);
+
+      const resp = await axios.post(
+        `${BACKEND_URL}/upload/resume`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setResume(resp.data.text);
+      toast.success("Resume uploaded successfully");
+    } catch (error) {
+      console.error(error);
+
+      toast.error("Resume upload failed");
+    }
+  };
 
   // Handle fake progress bar progression while loading
   useEffect(() => {
@@ -43,11 +80,19 @@ export function Form() {
       });
       return;
     }
+    if (!selectedFile){
+      toast.error("Invalid Input", {
+        description: "Please upload your resume",
+        position: "top-center",
+      });
+      return;
+    }
 
     try {
       setLoading(true);
       const resp = await axios.post(`${BACKEND_URL}/api/v1/pre-interview`, {
         github,
+        resume
       });
 
       setProgress(100);
@@ -87,6 +132,12 @@ export function Form() {
             value={github}
             onChange={(e) => setGithub(e.target.value)}
           />
+          <div className="p-2 mb-1 flex justify-around">
+            <Input type="file" onChange={onFileChange} accept=".pdf" placeholder="Upload your Resume" />
+            <div className="pl-2 mb-1 flex justify-end">
+              <Button onClick={onFileUpload}>Upload</Button>
+            </div>
+          </div>
         </div>
 
         <div className="flex justify-center p-1">
